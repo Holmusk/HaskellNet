@@ -221,7 +221,7 @@ sendCommand (SMTPC conn _) meth =
     where command = case meth of
                       (HELO param) -> "HELO " ++ param
                       (EHLO param) -> "EHLO " ++ param
-                      (MAIL param) -> "MAIL FROM:<" ++ param ++ ">"
+                      (MAIL param) -> "MAIL FROM:" ++ param
                       (RCPT param) -> "RCPT TO:<" ++ param ++ ">"
                       (EXPN param) -> "EXPN " ++ param
                       (VRFY param) -> "VRFY " ++ param
