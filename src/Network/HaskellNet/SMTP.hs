@@ -215,7 +215,8 @@ sendCommand (SMTPC conn _) (AUTH at username password) =
        parseResponse conn
     where command = BS.pack $ unwords ["AUTH", show at]
 sendCommand (SMTPC conn _) meth =
-    do bsPutCrLf conn $ BS.pack command
+    do putStrLn command
+       bsPutCrLf conn $ BS.pack command
        parseResponse conn
     where command = case meth of
                       (HELO param) -> "HELO " ++ param
