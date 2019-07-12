@@ -65,6 +65,7 @@ module Network.HaskellNet.SMTP
     , doSMTPStream
     , sendPlainTextMail
     , sendMimeMail
+    , sendMimeMailWithFromSender
     , sendMimeMail'
     , sendMimeMail2
     )
@@ -221,7 +222,7 @@ sendCommand (SMTPC conn _) meth =
     where command = case meth of
                       (HELO param) -> "HELO " ++ param
                       (EHLO param) -> "EHLO " ++ param
-                      (MAIL param) -> "MAIL FROM:" ++ param
+                      (MAIL param) -> "MAIL FROM:<" ++ param ++ ">"
                       (RCPT param) -> "RCPT TO:<" ++ param ++ ">"
                       (EXPN param) -> "EXPN " ++ param
                       (VRFY param) -> "VRFY " ++ param
@@ -314,6 +315,23 @@ sendPlainTextMail to from subject body con = do
     where
         myMail = simpleMail' (address to) (address from) (T.pack subject) body
         address = Address Nothing . T.pack
+
+sendMimeMailWithFromSender :: String               -- ^ receiver
+                           -> String               -- ^ sender name
+                           -> String               -- ^ sender
+                           -> String               -- ^ subject
+                           -> LT.Text              -- ^ plain text body
+                           -> LT.Text              -- ^ html body
+                           -> [(T.Text, FilePath)] -- ^ attachments: [(content_type, path)]
+                           -> SMTPConnection
+                           -> IO ()
+sendMimeMailWithFromSender to toName from subject plainBody htmlBody attachments con = do
+    myMail <- simpleMail (address to) (Address (Just $ T.pack toName) (T.pack from)) (T.pack subject)
+              plainBody htmlBody attachments
+    renderedMail <- renderMail' myMail
+    sendMail from [to] (lazyToStrict renderedMail) con
+    where
+      address = Address Nothing . T.pack
 
 -- | Send a mime mail. The attachments are included with the file path.
 sendMimeMail :: String               -- ^ receiver
